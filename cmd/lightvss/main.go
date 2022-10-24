@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+
 	_myhandler := func(_writer http.ResponseWriter, _request *http.Request) {
 		io.WriteString(_writer, "Check state!\n")
 	}

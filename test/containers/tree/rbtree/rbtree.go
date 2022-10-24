@@ -23,12 +23,12 @@ type Tree struct {
 
 /** Leaf node structure. **/
 type Node struct {
-	Key    interface{}
-	Value  interface{}
-	Left   *Node /** Left inheritor node **/
-	Right  *Node /** Right inheritor node **/
-	Parent *Node /** Root node for current node **/
-	color  color /** Color of the node  **/
+	Key    interface{} /** Node's key. **/
+	Value  interface{} /** Node's value. **/
+	Left   *Node       /** Left inheritor node **/
+	Right  *Node       /** Right inheritor node **/
+	Parent *Node       /** Root node for current node **/
+	color  color       /** Color of the node  **/
 }
 
 /*============================================================*/
@@ -41,24 +41,28 @@ func NewTree(comparator utils.Comparator) *Tree {
 /** Put Node value to tree. **/
 func (tree *Tree) Put(key interface{}, value interface{}) {
 	var tempNode *Node
-	if tree.Root == nil { //< If the first node is root
+	//< If the root node is empty, create root node. **/
+	if tree.Root == nil {
 		tree.Comparator(key, key)
 		tree.Root = &Node{Key: key, Value: value, color: red} //< Create root node value.
 		tempNode = tree.Root
 	} else {
-		node := tree.Root //< Select root node for start
-		isInsideLoop := true
+		node := tree.Root    //< Select root node for start.
+		isInsideLoop := true //< Running state for while loop.
 		for isInsideLoop {
 			compare := tree.Comparator(key, node.Key)
 			switch {
+			/** If keys are equal, replace existed key value. **/
 			case compare == 0:
 				{
 					node.Key = key
 					node.Value = value
 					return
 				}
+			/** If key to insert less then root node. **/
 			case compare < 0:
 				{
+					/** If Left node is empty, paste key there as red, else make left node root **/
 					if node.Left == nil {
 						node.Left = &Node{Key: key, Value: value, color: red}
 						tempNode = node.Left
@@ -67,8 +71,10 @@ func (tree *Tree) Put(key interface{}, value interface{}) {
 						node = node.Left
 					}
 				}
+			/** If key to insert more then root node. **/
 			case compare > 0:
 				{
+					/** If Right node is empty, paste key there as red, else make right node root **/
 					if node.Right == nil {
 						node.Right = &Node{Key: key, Value: value, color: red}
 						tempNode = node.Right
@@ -79,7 +85,7 @@ func (tree *Tree) Put(key interface{}, value interface{}) {
 				}
 			}
 		}
-		tempNode.Parent = node
+		tempNode.Parent = node /** Current node. **/
 	}
 	tree.insertInitialState(tempNode)
 	tree.size++ /** Increase tree size **/
@@ -87,6 +93,7 @@ func (tree *Tree) Put(key interface{}, value interface{}) {
 
 /** Manage color node and where to paste it. **/
 func (tree *Tree) insertInitialState(node *Node) {
+	//< If parent node doesn't exist, mark current node as black.
 	if node.Parent == nil {
 		node.color = black
 	} else {
@@ -96,6 +103,7 @@ func (tree *Tree) insertInitialState(node *Node) {
 
 /** Insert node if parent node exist. **/
 func (tree *Tree) insertParentExist(node *Node) {
+	//< If parent node is black
 	if nodeColor(node.Parent) == black {
 		return
 	}
@@ -108,7 +116,57 @@ func (tree *Tree) insertParentExist(node *Node) {
 	} else {
 		grandparent := node.grandparent()
 		if node == node.Parent.Right && node.Parent == grandparent.Left {
+			tree.rotateLeft(node.Parent)
+			node = node.Left
+		} else if node == node.Parent.Left && node.Parent == grandparent.Right {
+			tree.rotateRight(node.Parent)
+			node = node.Right
 		}
+		node.Parent.color = black
+		grandparent = node.grandparent()
+		grandparent.color = red
+		if node == node.Parent.Left && node.Parent == grandparent.Left {
+			tree.rotateRight(grandparent)
+		} else if node == node.Parent.Right && node.Parent == grandparent.Right {
+			tree.rotateLeft(grandparent)
+		}
+	}
+}
+
+func (tree *Tree) rotateLeft(node *Node) {
+	right := node.Right
+	tree.replaceNode(node, right)
+	node.Right = right.Left
+	if right.Left != nil {
+		right.Left.Parent = node
+	}
+	right.Left = node
+	node.Parent = right
+}
+
+func (tree *Tree) rotateRight(node *Node) {
+	left := node.Left
+	tree.replaceNode(node, left)
+	node.Left = left.Right
+	if left.Right != nil {
+		left.Right.Parent = node
+	}
+	left.Right = node
+	node.Parent = left
+}
+
+func (tree *Tree) replaceNode(old *Node, new *Node) {
+	if old.Parent == nil {
+		tree.Root = new
+	} else {
+		if old == old.Parent.Left {
+			old.Parent.Left = new
+		} else {
+			old.Parent.Right = new
+		}
+	}
+	if new != nil {
+		new.Parent = old.Parent
 	}
 }
 
