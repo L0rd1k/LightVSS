@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+
+	"github.com/L0rd1k/LightVSS/test/containers/net"
 )
 
 func test_handler(_writer http.ResponseWriter, _request *http.Request) {
@@ -16,6 +17,21 @@ func test_handler_2(_writer http.ResponseWriter, _request *http.Request) {
 	}
 }
 
+type Handler struct{}
+
+func (handler *Handler) ServeHTTP(_writer http.ResponseWriter, _request *http.Request) {
+	switch _request.URL.Path {
+	case "/":
+		fmt.Fprintf(_writer, "URL.Path = %q\n", _request.URL.Path)
+	case "/hello":
+		for k, v := range _request.Header {
+			fmt.Fprintf(_writer, "Header[%q] = %q\n", k, v)
+		}
+	default:
+		fmt.Fprintf(_writer, "404 NOT FOUND: %s\n", _request.URL)
+	}
+}
+
 func main() {
 
 	// _myhandler := func(_writer http.ResponseWriter, _request *http.Request) {
@@ -24,7 +40,24 @@ func main() {
 	// http.HandleFunc("/hello", _myhandler)
 	// log.Println("Listen for request!")
 
-	http.HandleFunc("/", test_handler)
-	http.HandleFunc("/hello", test_handler_2)
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	// handler := new(Handler)
+	// log.Fatal(http.ListenAndServe(":9999", handler))
+
+	// http.HandleFunc("/", test_handler)
+	// http.HandleFunc("/hello", test_handler_2)
+	// log.Fatal(http.ListenAndServe(":8000", nil))
+
+	reader := net.New()
+
+	reader.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+	})
+
+	reader.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
+		for k, v := range r.Header {
+			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
+		}
+	})
+
+	reader.Run(":9999")
 }
