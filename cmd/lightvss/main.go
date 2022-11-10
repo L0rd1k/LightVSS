@@ -34,19 +34,6 @@ func (handler *Handler) ServeHTTP(_writer http.ResponseWriter, _request *http.Re
 
 func main() {
 
-	// _myhandler := func(_writer http.ResponseWriter, _request *http.Request) {
-	// 	io.WriteString(_writer, "Check state!\n")
-	// }
-	// http.HandleFunc("/hello", _myhandler)
-	// log.Println("Listen for request!")
-
-	// handler := new(Handler)
-	// log.Fatal(http.ListenAndServe(":9999", handler))
-
-	// http.HandleFunc("/", test_handler)
-	// http.HandleFunc("/hello", test_handler_2)
-	// log.Fatal(http.ListenAndServe(":8000", nil))
-
 	reader := net.New()
 
 	reader.Get("/", func(w http.ResponseWriter, r *http.Request) {

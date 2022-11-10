@@ -19,10 +19,11 @@ func New() *HttpHandler {
 	return &HttpHandler{router: make(map[string]HandlerFunc)}
 }
 
-/** Добавление маршрута для определенного запроса. **/
+/** Добавление маршрута для определенного типа запроса. **/
 func (httphandler *HttpHandler) addRoute(method string, pattern string, handler HandlerFunc) {
 	key := method + "-" + pattern
 	log.Printf("Route %4s - %s", method, pattern)
+	//> Добавляем ключ-путь: тип запроса-путь, и его обработчик.
 	httphandler.router[key] = handler
 }
 
@@ -39,8 +40,10 @@ func (httphandler *HttpHandler) Post(pattern string, handler HandlerFunc) {
 func (httphandler *HttpHandler) ServeHTTP(_writer http.ResponseWriter, _request *http.Request) {
 	key := _request.Method + "-" + _request.URL.Path
 	if handler, ok := httphandler.router[key]; ok {
+		//> Если ключ с таким типом запросом и путем существует, вызваем обработчик.
 		handler(_writer, _request)
 	} else {
+		//> Если ключа нет, кидаем 404 код ответа HTTP
 		fmt.Fprintf(_writer, "404 NOT FOUND: %s\n", _request.URL)
 	}
 }
