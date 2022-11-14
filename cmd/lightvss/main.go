@@ -36,14 +36,29 @@ func main() {
 
 	reader := net.New()
 
-	reader.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+	// reader.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+	// })
+
+	// reader.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
+	// 	for k, v := range r.Header {
+	// 		fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
+	// 	}
+	// })
+
+	reader.Get("/", func(s *net.Substance) {
+		s.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
 	})
 
-	reader.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
-		for k, v := range r.Header {
-			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
-		}
+	reader.Get("/hello", func(s *net.Substance) {
+		s.String(http.StatusOK, "hello %s, you're at %s\n", s.Query("name"), s.Path)
+	})
+
+	reader.Post("/login", func(s *net.Substance) {
+		s.JSON(http.StatusOK, net.H{
+			"username": s.PostForm("username"),
+			"password": s.PostForm("password"),
+		})
 	})
 
 	reader.Run(":9999")
